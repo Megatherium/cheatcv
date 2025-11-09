@@ -1,25 +1,11 @@
-#!/usr/bin/env python3
-"""
-Comprehensive performance profiling of full pipeline.
-
-Profiles:
-- ADB screen capture (both methods)
-- CV detection (circles + patterns) at different scales
-- Full automation cycle
-- Memory usage
-
-Outputs cProfile stats and summary report.
-"""
+"""Comprehensive performance profiling of full pipeline."""
 
 import sys
-from pathlib import Path
 import time
 import cProfile
 import pstats
 import io
-
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import click
 
 from cheatcv.adb.device import Device
 from cheatcv.cv.circles import CircleDetector
@@ -189,7 +175,11 @@ def profile_full_cycle(device, scale=0.5):
     }
 
 
-def main():
+@click.command()
+@click.option('--iterations', type=int, default=10, help='Number of iterations for capture profiling')
+@click.option('--scale', type=float, default=0.5, help='Downscale factor for CV')
+def profile(iterations, scale):
+    """Run comprehensive performance profiling."""
     print("\n" + "="*70)
     print("CheatCV Performance Profiling Suite")
     print("="*70)
@@ -198,13 +188,13 @@ def main():
         device = Device()
 
         # 1. Profile capture methods
-        capture_stats = profile_capture_methods(device, iterations=10)
+        capture_stats = profile_capture_methods(device, iterations=iterations)
 
         # 2. Profile CV pipeline
-        cv_stats = profile_cv_pipeline(device, scale=0.5)
+        cv_stats = profile_cv_pipeline(device, scale=scale)
 
         # 3. Profile full cycle
-        cycle_stats = profile_full_cycle(device, scale=0.5)
+        cycle_stats = profile_full_cycle(device, scale=scale)
 
         # Summary report
         print(f"\n{'='*70}")
@@ -213,7 +203,7 @@ def main():
 
         print(f"\nOptimal Configuration:")
         print(f"  Capture method: exec-out (capture_screen_fast)")
-        print(f"  Downscale:      0.5 (540x1200)")
+        print(f"  Downscale:      {scale}")
         print(f"  Average cycle:  {cycle_stats['total_ms']:.0f}ms")
 
         print(f"\nExpected Automation Performance:")
@@ -237,7 +227,3 @@ def main():
         import traceback
         traceback.print_exc()
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

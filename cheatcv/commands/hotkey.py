@@ -1,25 +1,11 @@
-#!/usr/bin/env python3
-"""
-Run CheatCV automation with hotkey control.
-
-Hotkeys:
-  F9  - Start/Stop automation toggle
-  ESC - Emergency stop (exit program)
-
-The automation runs in a background thread, controlled by hotkeys.
-"""
+"""Run CheatCV automation with hotkey control."""
 
 import sys
-from pathlib import Path
 import logging
 import threading
-import time
-
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import click
 
 from cheatcv.brain.automation import CheatCVAutomation, State
-from pynput import keyboard
 
 
 class HotkeyController:
@@ -79,6 +65,8 @@ class HotkeyController:
 
     def on_press(self, key):
         """Handle key press events."""
+        from pynput import keyboard
+
         try:
             # F9 - Toggle automation
             if key == keyboard.Key.f9:
@@ -100,6 +88,8 @@ class HotkeyController:
 
     def run(self):
         """Run hotkey listener loop."""
+        from pynput import keyboard
+
         print("\n" + "="*70)
         print("CheatCV Automation - Hotkey Mode")
         print("="*70)
@@ -121,10 +111,13 @@ class HotkeyController:
         self.logger.info("Exiting...")
 
 
-def main():
+@click.command()
+@click.option('--debug', is_flag=True, help='Enable debug logging')
+def hotkey(debug):
+    """Run automation with hotkey control (F9=start/stop, ESC=exit)."""
     # Setup logging
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG if debug else logging.INFO,
         format='[%(asctime)s] [%(levelname)s] %(message)s',
         datefmt='%H:%M:%S'
     )
@@ -135,7 +128,7 @@ def main():
             downscale=0.5,
             tap_delay_range=(500, 1500),
             max_fill_iterations=50,
-            debug=False,  # Set to True for verbose logging
+            debug=debug,
         )
 
         # Run hotkey controller
@@ -150,7 +143,3 @@ def main():
         import traceback
         traceback.print_exc()
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

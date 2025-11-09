@@ -12,11 +12,19 @@ Automated coloring game solver using computer vision and ADB. Detects color circ
 ### 1. Setup Environment
 
 ```bash
-# Activate Python environment
-source ~/.bashrc.d/pyenv.bash && pyenv activate cheatcv
+# Install dependencies with uv (fast, modern Python package manager)
+uv sync
 
-# Install dependencies (already done)
-# uv pip install -r requirements.txt
+# The package will be automatically installed in editable mode
+```
+
+**Alternative (if you don't have uv):**
+```bash
+# Install uv first
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Then sync
+uv sync
 ```
 
 ### 2. Connect Android Device
@@ -33,7 +41,7 @@ adb devices
 
 **Option A: Hotkey Mode (Recommended)**
 ```bash
-python3 scripts/run_with_hotkey.py
+cheatcv hotkey [--debug]
 
 # Hotkeys:
 #   F9  - Start/Stop automation toggle
@@ -42,18 +50,19 @@ python3 scripts/run_with_hotkey.py
 
 **Option B: Standalone Mode**
 ```bash
-python3 scripts/run_automation.py [--debug] [--dry-run]
+cheatcv run [--debug] [--dry-run] [--max-cycles N]
 
 # Flags:
-#   --debug   - Verbose logging
-#   --dry-run - Simulate without tapping (CV testing only)
+#   --debug       - Verbose logging
+#   --dry-run     - Simulate without tapping (CV testing only)
+#   --max-cycles  - Maximum automation cycles (default: 500)
 ```
 
 ### 4. Keep Device Awake
 
 ```bash
 # Start keepalive (random taps every 30s)
-python3 scripts/keepalive.py
+cheatcv keepalive [--interval 30] [--width 1080] [--height 2400]
 
 # Stop with Ctrl+C
 ```
@@ -136,17 +145,20 @@ IDLE
 
 ```bash
 # Test CV detection on samples
-python3 scripts/test_circles.py
-python3 scripts/test_patterns.py
+cheatcv test circles
+cheatcv test patterns
+
+# Test ADB connection
+cheatcv test adb
 
 # Test live device detection
-python3 scripts/test_live_detection.py
+cheatcv test live
 
 # Benchmark ADB capture methods
-python3 scripts/benchmark_capture.py
+cheatcv benchmark [--iterations N]
 
 # Comprehensive profiling
-python3 scripts/profile_full_pipeline.py
+cheatcv profile [--iterations N] [--scale 0.5]
 ```
 
 ### Validation Results
@@ -158,37 +170,80 @@ python3 scripts/profile_full_pipeline.py
 
 ---
 
+## CLI Reference
+
+CheatCV uses a single entry point with subcommands. Get help for any command with `--help`:
+
+```bash
+cheatcv --help                # Show all available commands
+cheatcv <command> --help      # Show help for specific command
+```
+
+### Main Commands
+
+- **`cheatcv run`** - Run automation on live device
+  - `--debug` - Enable debug logging
+  - `--dry-run` - Simulate without tapping (CV testing only)
+  - `--max-cycles N` - Maximum automation cycles (default: 500)
+
+- **`cheatcv hotkey`** - Run with hotkey control (F9=toggle, ESC=exit)
+  - `--debug` - Enable debug logging
+
+- **`cheatcv keepalive`** - Keep device awake with random taps
+  - `--interval N` - Seconds between taps (default: 30)
+  - `--width N` - Screen width in pixels (default: 1080)
+  - `--height N` - Screen height in pixels (default: 2400)
+
+### Testing Commands
+
+- **`cheatcv test circles`** - Test circle detection on sample images
+- **`cheatcv test patterns`** - Test pattern detection on sample images
+- **`cheatcv test adb`** - Test ADB connection and screen capture
+- **`cheatcv test live`** - Test live detection on device screen
+
+### Performance Commands
+
+- **`cheatcv benchmark`** - Benchmark ADB capture methods
+  - `--iterations N` - Number of iterations (default: 5)
+
+- **`cheatcv profile`** - Run comprehensive performance profiling
+  - `--iterations N` - Number of iterations for capture profiling (default: 10)
+  - `--scale F` - Downscale factor for CV (default: 0.5)
+
+---
+
 ## Project Structure
 
 ```
 cheatcv/
-├── src/cheatcv/
+├── cheatcv/                   # Main package (flat layout)
+│   ├── cli.py                 # Main CLI entry point
+│   ├── commands/              # Click command modules
+│   │   ├── run.py             # Standalone automation runner
+│   │   ├── hotkey.py          # Hotkey-controlled runner (F9/ESC)
+│   │   ├── keepalive.py       # Keep screen awake (random taps)
+│   │   ├── test.py            # Test command group
+│   │   ├── benchmark.py       # ADB method comparison
+│   │   └── profile.py         # Performance profiling
 │   ├── adb/
-│   │   └── device.py           # ADB wrapper (capture, tap, swipe)
+│   │   └── device.py          # ADB wrapper (capture, tap, swipe)
 │   ├── cv/
-│   │   ├── circles.py          # Color circle detection (HoughCircles)
-│   │   └── patterns.py         # Checkerboard pattern detection
+│   │   ├── circles.py         # Color circle detection (HoughCircles)
+│   │   └── patterns.py        # Checkerboard pattern detection
 │   └── brain/
-│       └── automation.py       # State machine & main logic
-│
-├── scripts/
-│   ├── keepalive.py           # Keep screen awake (random taps)
-│   ├── run_automation.py      # Standalone automation runner
-│   ├── run_with_hotkey.py     # Hotkey-controlled runner (F9/ESC)
-│   ├── test_*.py              # Unit tests for components
-│   ├── benchmark_capture.py   # ADB method comparison
-│   └── profile_full_pipeline.py # Performance profiling
+│       └── automation.py      # State machine & main logic
 │
 ├── sample/base/               # Reference images (gameplay screenshots)
 ├── debug_output/              # Annotated detection outputs
 ├── notes/
 │   ├── CHECKPOINT.md          # Current state snapshot
-│   └── devlogs/              # Session-by-session logs
+│   └── devlogs/               # Session-by-session logs
 ├── docs/
-│   └── GRIMOIRE.md           # Architecture & design doc
+│   └── GRIMOIRE.md            # Architecture & design doc
 │
-├── pyproject.toml            # Dependencies & config
-└── README.md                 # This file
+├── pyproject.toml             # Dependencies & config
+├── uv.lock                    # UV lock file (reproducible builds)
+└── README.md                  # This file
 ```
 
 ---
@@ -206,11 +261,12 @@ cheatcv/
 ## Next Steps
 
 **Ready for live testing**:
-1. Start fresh coloring page on device
-2. Run `scripts/run_with_hotkey.py`
-3. Press F9 to start automation
-4. Monitor state transitions and tap accuracy
-5. Measure completion time and success rate
+1. Install dependencies: `uv sync`
+2. Start fresh coloring page on device
+3. Run `cheatcv hotkey`
+4. Press F9 to start automation
+5. Monitor state transitions and tap accuracy
+6. Measure completion time and success rate
 
 **Future enhancements** (Phase 4):
 - Ad detection & handling

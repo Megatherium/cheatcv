@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
-"""
-Keepalive script for Android device - taps random locations in safe zone to keep screen active.
-
-Safe zone: Middle 60% vertical (avoid top/bottom 20% for UI elements)
-Interval: 30 seconds between taps
-"""
+"""Keepalive script for Android device - taps random locations to keep screen active."""
 
 import time
 import random
 import signal
 import sys
 import subprocess
+import click
 from typing import Tuple
 
 
@@ -112,12 +107,11 @@ class Keepalive:
             time.sleep(self.interval)
 
 
-def main():
-    """Entry point for keepalive script."""
-    # Default to 1080x2400 (common Android resolution)
-    keepalive = Keepalive(width=1080, height=2400, interval=30)
-    keepalive.run()
-
-
-if __name__ == "__main__":
-    main()
+@click.command()
+@click.option('--width', type=int, default=1080, help='Screen width in pixels')
+@click.option('--height', type=int, default=2400, help='Screen height in pixels')
+@click.option('--interval', type=int, default=30, help='Seconds between taps')
+def keepalive(width, height, interval):
+    """Keep Android device screen awake by tapping random locations."""
+    ka = Keepalive(width=width, height=height, interval=interval)
+    ka.run()

@@ -1,18 +1,8 @@
-#!/usr/bin/env python3
-"""
-Benchmark ADB screen capture methods.
-
-Compares:
-- capture_screen() - Traditional method (file I/O on device)
-- capture_screen_fast() - Optimized exec-out method (streams directly)
-"""
+"""Benchmark ADB screen capture methods."""
 
 import sys
-from pathlib import Path
 import time
-
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import click
 
 from cheatcv.adb.device import Device, DeviceError
 
@@ -50,7 +40,10 @@ def benchmark_method(device, method_name, iterations=5):
     return None
 
 
-def main():
+@click.command()
+@click.option('--iterations', type=int, default=5, help='Number of iterations per method')
+def benchmark(iterations):
+    """Benchmark ADB screen capture methods."""
     print("[Benchmark] Initializing ADB device...")
 
     try:
@@ -59,10 +52,10 @@ def main():
         print(f"[Benchmark] Device: {width}x{height}")
 
         # Benchmark traditional method
-        traditional_avg = benchmark_method(device, "capture_screen", iterations=5)
+        traditional_avg = benchmark_method(device, "capture_screen", iterations=iterations)
 
         # Benchmark optimized method
-        fast_avg = benchmark_method(device, "capture_screen_fast", iterations=5)
+        fast_avg = benchmark_method(device, "capture_screen_fast", iterations=iterations)
 
         # Compare
         if traditional_avg and fast_avg:
@@ -97,7 +90,3 @@ def main():
     except DeviceError as e:
         print(f"[Benchmark] Device error: {e}")
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
