@@ -134,8 +134,7 @@ class CheatCVAutomation:
         self.stats.state_transitions.append(
             (timestamp, old_state, new_state, reason))
 
-        self.logger.info(f"State: {old_state.value} → {
-                         new_state.value} ({reason})")
+        self.logger.info(f"State: {old_state.value} → {new_state.value} ({reason})")
 
     def state_color_select(self, img: np.ndarray) -> State:
         """
@@ -302,8 +301,7 @@ class CheatCVAutomation:
         elapsed = time.time() - self.stats.start_time
 
         self.logger.info(f"\n{'='*60}")
-        self.logger.info(f"Automation finished after {
-                         cycle_count} cycles ({elapsed:.1f}s)")
+        self.logger.info(f"Automation finished after {cycle_count} cycles ({elapsed:.1f}s)")
         self.logger.info(f"  Taps: {self.stats.taps_total}")
         self.logger.info(f"  Captures: {self.stats.captures_total}")
         self.logger.info(f"  Colors completed: {self.stats.colors_completed}")
