@@ -12,12 +12,19 @@ Automated coloring game solver using computer vision and ADB. Detects color circ
 ### 1. Setup Environment
 
 ```bash
-# Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
+# Install dependencies with uv (fast, modern Python package manager)
+uv sync
 
-# Install the package
-pip install -e .
+# The package will be automatically installed in editable mode
+```
+
+**Alternative (if you don't have uv):**
+```bash
+# Install uv first
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Then sync
+uv sync
 ```
 
 ### 2. Connect Android Device
@@ -209,7 +216,7 @@ cheatcv <command> --help      # Show help for specific command
 
 ```
 cheatcv/
-├── src/cheatcv/
+├── cheatcv/                   # Main package (flat layout)
 │   ├── cli.py                 # Main CLI entry point
 │   ├── commands/              # Click command modules
 │   │   ├── run.py             # Standalone automation runner
@@ -226,7 +233,6 @@ cheatcv/
 │   └── brain/
 │       └── automation.py      # State machine & main logic
 │
-├── scripts/                   # Legacy scripts (deprecated, use CLI instead)
 ├── sample/base/               # Reference images (gameplay screenshots)
 ├── debug_output/              # Annotated detection outputs
 ├── notes/
@@ -236,6 +242,7 @@ cheatcv/
 │   └── GRIMOIRE.md            # Architecture & design doc
 │
 ├── pyproject.toml             # Dependencies & config
+├── uv.lock                    # UV lock file (reproducible builds)
 └── README.md                  # This file
 ```
 
@@ -254,7 +261,7 @@ cheatcv/
 ## Next Steps
 
 **Ready for live testing**:
-1. Install the package: `pip install -e .`
+1. Install dependencies: `uv sync`
 2. Start fresh coloring page on device
 3. Run `cheatcv hotkey`
 4. Press F9 to start automation
